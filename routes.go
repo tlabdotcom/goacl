@@ -11,16 +11,9 @@ import (
 
 func (a *ACL) SetupRoutes(e *echo.Echo) {
 	g := e.Group("/acl")
-
-	g.GET("/load-policy", func(c echo.Context) error {
-		err := loadPoliciesFromDB(a.Enforcer, a.DB)
-		if err != nil {
-			return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
-		}
-		return c.JSON(http.StatusOK, goresponse.GenerateSingleDataResponse(nil, "success", http.StatusOK))
-	})
 	g.GET("/roles", a.listRolesHandler)
 	g.POST("/roles", a.createRoleHandler)
+	g.GET("/roles/:id", a.detailRoleHandler)
 	g.PUT("/roles/:id", a.updateRoleHandler)
 	g.DELETE("/roles/:id", a.deleteRoleHandler)
 
@@ -39,12 +32,25 @@ func (a *ACL) SetupRoutes(e *echo.Echo) {
 
 // Role handlers
 func (a *ACL) listRolesHandler(c echo.Context) error {
-	datas, err := a.listRoles(c.Request().Context())
+	datas, err := a.ListRoles(c.Request().Context())
 	if err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusInternalServerError).AddError(err).JSON(c)
 	}
 	return c.JSON(http.StatusOK, goresponse.GenerateSingleDataResponse(datas, "success", http.StatusOK))
 }
+
+func (a *ACL) detailRoleHandler(c echo.Context) error {
+	roleID, err := gohelper.StringToInt64(c.Param("id"))
+	if err != nil {
+		return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
+	}
+	data, err := a.GetRoleWithFeatures(c.Request().Context(), roleID)
+	if err != nil {
+		return goresponse.NewStandardErrorResponse(http.StatusInternalServerError).AddError(err).JSON(c)
+	}
+	return c.JSON(http.StatusOK, goresponse.GenerateSingleDataResponse(data, "success", http.StatusOK))
+}
+
 func (a *ACL) createRoleHandler(c echo.Context) error {
 	params := new(AclParam)
 	if err := c.Bind(params); err != nil {
@@ -54,10 +60,11 @@ func (a *ACL) createRoleHandler(c echo.Context) error {
 	if err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
 	}
-	if err := a.CreateRole(c.Request().Context(), params); err != nil {
+	data, err := a.CreateRole(c.Request().Context(), params)
+	if err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusInternalServerError).AddError(err).JSON(c)
 	}
-	return c.JSON(http.StatusCreated, goresponse.GenerateSingleDataResponse(params, "Role created successfully", http.StatusCreated))
+	return c.JSON(http.StatusCreated, goresponse.GenerateSingleDataResponse(data, "Role created successfully", http.StatusCreated))
 }
 
 func (a *ACL) updateRoleHandler(c echo.Context) error {

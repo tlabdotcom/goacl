@@ -66,54 +66,30 @@ func NewACL(db *bun.DB, redis *redis.Client, aclKeyEvents *string) (*ACL, error)
 	}, nil
 }
 
-func (a *ACL) CreateRole(ctx context.Context, param *AclParam) error {
-	// add roles
-	role := &Role{
-		Name:        param.Name,
-		Label:       param.Label,
-		Description: param.Description,
-	}
-	_, err := a.DB.NewInsert().Model(role).Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	
-
-
-
-
-	return nil
-}
 func (a *ACL) UpdateRole(ctx context.Context, role *Role) error {
-	a.publishEvent(RoleUpdatedEvent, role)
-	return nil
-}
-func (a *ACL) DeleteRole(ctx context.Context, roleID int64) error {
-	role := &Role{ID: roleID}
-	a.publishEvent(RoleDeletedEvent, role)
+	// a.publishEvent(RoleUpdatedEvent, role)
 	return nil
 }
 
 // Implement CRUD operations for Feature, SubFeature, and Policy...
 func (a *ACL) AddPolicy(ctx context.Context, policy *Policy) error {
 	// Publish event
-	a.publishEvent(PolicyCreatedEvent, policy)
+	// a.publishEvent(PolicyCreatedEvent, policy)
 	return nil
 }
 func (a *ACL) RemovePolicy(ctx context.Context, policyID int64) error {
-	policy := &Policy{ID: policyID}
-	a.publishEvent(PolicyDeletedEvent, policy)
+	// policy := &Policy{ID: policyID}
+	// a.publishEvent(PolicyDeletedEvent, policy)
 	return nil
 }
 
 // CRUD operations for Feature
 func (a *ACL) CreateFeature(ctx context.Context, feature *Feature) error {
-	a.publishEvent(FeatureCreatedEvent, feature)
+	// a.publishEvent(FeatureCreatedEvent, feature)
 	return nil
 }
 func (a *ACL) UpdateFeature(ctx context.Context, feature *Feature) error {
-	a.publishEvent(FeatureUpdatedEvent, feature)
+	// a.publishEvent(FeatureUpdatedEvent, feature)
 	return nil
 }
 func (a *ACL) DeleteFeature(ctx context.Context, featureID int64) error {
@@ -122,21 +98,21 @@ func (a *ACL) DeleteFeature(ctx context.Context, featureID int64) error {
 	if err != nil {
 		return err
 	}
-	a.publishEvent(FeatureDeletedEvent, feature)
+	// a.publishEvent(FeatureDeletedEvent, feature)
 	return nil
 }
 
 // CRUD operations for SubFeature
 func (a *ACL) CreateSubFeature(ctx context.Context, subFeature *SubFeature) error {
-	a.publishEvent(SubFeatureCreatedEvent, subFeature)
+	// a.publishEvent(SubFeatureCreatedEvent, subFeature)
 	return nil
 }
 func (a *ACL) UpdateSubFeature(ctx context.Context, subFeature *SubFeature) error {
-	a.publishEvent(SubFeatureUpdatedEvent, subFeature)
+	// a.publishEvent(SubFeatureUpdatedEvent, subFeature)
 	return nil
 }
 func (a *ACL) DeleteSubFeature(ctx context.Context, subFeatureID int64) error {
-	subFeature := &SubFeature{ID: subFeatureID}
-	a.publishEvent(SubFeatureDeletedEvent, subFeature)
+	// subFeature := &SubFeature{ID: subFeatureID}
+	// a.publishEvent(SubFeatureDeletedEvent, subFeature)
 	return nil
 }

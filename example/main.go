@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 
@@ -29,7 +28,7 @@ func main() {
 		e.Logger.Fatal(err)
 	}
 	// consummer listener
-	go acl.ConsumeEvents(context.TODO())
+	// go acl.ConsumeEvents(context.TODO())
 	// setup routes
 	acl.SetupRoutes(e)
 

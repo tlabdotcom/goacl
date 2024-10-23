@@ -2,6 +2,7 @@ package goacl
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"testing"
 
@@ -61,7 +62,13 @@ func TestACL_GetSubFeatureIncludeEndpointsByIDs(t *testing.T) {
 				t.Errorf("ACL.GetSubFeatureIncludeEndpointsByIDs() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			t.Log(got)
+			// t.Log(got)
+			for _, subFeature := range got {
+				fmt.Println("feature:", *subFeature.Feature)
+				for _, end := range subFeature.Endpoints {
+					fmt.Println("end:", *end)
+				}
+			}
 		})
 	}
 }

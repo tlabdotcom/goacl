@@ -7,10 +7,11 @@ import (
 
 type Role struct {
 	bun.BaseModel `bun:"table:roles,alias:r"`
-	ID            int64  `bun:"id,pk,autoincrement" json:"id"`
-	Name          string `bun:"name,unique" json:"name"`
-	Label         string `json:"label"`
-	Description   string `json:"description"`
+	ID            int64     `bun:"id,pk,autoincrement" json:"id"`
+	Name          string    `bun:"name,unique" json:"name"`
+	Label         string    `json:"label"`
+	Description   string    `json:"description"`
+	Features      []Feature `bun:"-" json:"features"`
 }
 
 type Feature struct {
@@ -29,6 +30,7 @@ type SubFeature struct {
 	Name          string      `bun:"name,unique" json:"name"`
 	Description   string      `json:"description"`
 	Endpoints     []*Endpoint `bun:"rel:has-many,join:id=sub_feature_id" json:"endpoints,omitempty"`
+	Status        bool        `bun:"-" json:"status"`
 }
 
 type Endpoint struct {
@@ -52,8 +54,8 @@ type Policy struct {
 }
 
 type SubFeatureParam struct {
-	SubFeatureID int64 `param:"sub_feature_id" query:"sub_feature_id" form:"sub_feature_id" json:"sub_feature_id" xml:"sub_feature_id"`
-	Status       bool  `param:"status" query:"status" form:"status" json:"status" xml:"status"`
+	ID     int64 `param:"id" query:"id" form:"id" json:"id" xml:"id"`
+	Status bool  `param:"status" query:"status" form:"status" json:"status" xml:"status"`
 }
 
 type AclParam struct {

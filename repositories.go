@@ -7,19 +7,11 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// role
-func (a *ACL) listRoles(ctx context.Context) ([]Role, error) {
-	datas := []Role{}
-	err := a.DB.NewSelect().Model(&datas).Scan(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return datas, nil
-}
 func (a *ACL) createRoleToDB(ctx context.Context, param *AclParam) error {
 	role := &Role{
-		Name:  param.Name,
-		Label: param.Label,
+		Name:        param.Name,
+		Label:       param.Label,
+		Description: param.Description,
 	}
 	_, err := a.DB.NewInsert().Model(role).Exec(ctx)
 	if err != nil {
@@ -32,14 +24,6 @@ func (a *ACL) updateRoleToDB(ctx context.Context, role *Role) error {
 	_, err := a.DB.NewUpdate().Model(role).WherePK().Exec(ctx)
 	if err != nil {
 		log.Errorf("Error updating role: %v", err)
-	}
-	return nil
-}
-
-func (a *ACL) deleteRoleToDB(ctx context.Context, role *Role) error {
-	_, err := a.DB.NewDelete().Model(role).WherePK().Exec(ctx)
-	if err != nil {
-		return err
 	}
 	return nil
 }
@@ -82,6 +66,7 @@ func (a *ACL) getSubFeatureIncludeEndpointsByIDs(ctx context.Context, ids []int6
 	subFeatures := []SubFeature{}
 	err := a.DB.NewSelect().
 		Model(&subFeatures).
+		Relation("Feature").
 		Relation("Endpoints").
 		Where("sf.id IN (?)", bun.In(ids)).
 		OrderExpr("sf.id ASC").
