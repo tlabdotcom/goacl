@@ -111,8 +111,8 @@ github.com/tlabdotcom/goencryption v1.0.0 h1:yocGQoalwZPdMVL4r4Jqp4jL2jcZHPfv6fE
 github.com/tlabdotcom/goencryption v1.0.0/go.mod h1:U2O1aU3VkTgW04KkZ9R5ERPd70FjEBYjBoICfxdl+qE=
 github.com/tlabdotcom/gohelper v1.0.2 h1:XJ9GGl+iENZkFbqHNQNrRlyu9efAPOrWCvznM33C6yk=
 github.com/tlabdotcom/gohelper v1.0.2/go.mod h1:gBnsZcsXDDDjGvEeUg7dInbqdDxzEp4oVTmRjp26Ks8=
-github.com/tlabdotcom/goresponse v1.0.1 h1:u0iY5vlD2tXaHzY0m/PMBbjk3DV1hAvahjtWLbH3Vzs=
-github.com/tlabdotcom/goresponse v1.0.1/go.mod h1:9ZmP0vha3jW96QzmyjswV2sFvIE8RwAsyMKf4MxfmH4=
+github.com/tlabdotcom/goresponse v1.0.2 h1:iqdiFoE4GVBNHbGGBmuYZ6nUN+WZVo70FfRx6bv/FMY=
+github.com/tlabdotcom/goresponse v1.0.2/go.mod h1:nxOTAolI1/GGkRq/PhPbRnRraiLOYlYp0STCOpaig9A=
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc h1:9lRDQMhESg+zvGYmW5DyG0UqvY96Bu5QYsTLvCHdrgo=
 github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc/go.mod h1:bciPuU6GHm1iF1pBvUfxfsH0Wmnc2VbpgvbI9ZWuIRs=
 github.com/uptrace/bun v1.2.3 h1:6KDc6YiNlXde38j9ATKufb8o7MS8zllhAOeIyELKrk0=

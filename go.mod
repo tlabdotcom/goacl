@@ -12,7 +12,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/tlabdotcom/godb v1.0.0
 	github.com/tlabdotcom/gohelper v1.0.2
-	github.com/tlabdotcom/goresponse v1.0.1
+	github.com/tlabdotcom/goresponse v1.0.2
 	github.com/uptrace/bun v1.2.3
 )
 
