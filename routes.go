@@ -52,7 +52,7 @@ func (a *ACL) detailRoleHandler(c echo.Context) error {
 }
 
 func (a *ACL) createRoleHandler(c echo.Context) error {
-	params := new(AclParam)
+	params := new(RoleParam)
 	if err := c.Bind(params); err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
 	}
@@ -68,7 +68,7 @@ func (a *ACL) createRoleHandler(c echo.Context) error {
 }
 
 func (a *ACL) updateRoleHandler(c echo.Context) error {
-	role := new(Role)
+	role := new(RoleParam)
 	if err := c.Bind(role); err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
 	}
@@ -77,10 +77,15 @@ func (a *ACL) updateRoleHandler(c echo.Context) error {
 	if err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
 	}
-	if err := a.UpdateRole(c.Request().Context(), role); err != nil {
+	err = a.UpdateRole(c.Request().Context(), role)
+	if err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusInternalServerError).AddError(err).JSON(c)
 	}
-	return c.JSON(http.StatusOK, goresponse.GenerateSingleDataResponse(role, "Role updated successfully", http.StatusOK))
+	data, err := a.GetRoleWithFeatures(c.Request().Context(), role.ID)
+	if err != nil {
+		return goresponse.NewStandardErrorResponse(http.StatusInternalServerError).AddError(err).JSON(c)
+	}
+	return c.JSON(http.StatusOK, goresponse.GenerateSingleDataResponse(data, "Role updated successfully", http.StatusOK))
 }
 
 func (a *ACL) deleteRoleHandler(c echo.Context) error {

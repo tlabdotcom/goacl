@@ -9,7 +9,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func (a *ACL) CreateRole(ctx context.Context, param *AclParam) (*Role, error) {
+func (a *ACL) CreateRole(ctx context.Context, param *RoleParam) (*Role, error) {
 	// Start a transaction
 	tx, err := a.DB.BeginTx(ctx, nil)
 	if err != nil {
@@ -108,6 +108,142 @@ func (a *ACL) ListRoles(ctx context.Context) ([]Role, error) {
 	return datas, nil
 }
 
+func (a *ACL) UpdateRole(ctx context.Context, param *RoleParam) error {
+	// Start a transaction
+	tx, err := a.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			_ = tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
+	// Fetch the existing role data
+	roleData, err := a.GetRoleByID(ctx, param.ID)
+	if err != nil {
+		return fmt.Errorf("failed to fetch role: %w", err)
+	}
+
+	// Validate the role for update
+	updatedRole, err := param.ValidateForUpdate(roleData)
+	if err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
+
+	// Update the role details
+	_, err = tx.NewUpdate().Model(updatedRole).WherePK().Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to update role: %w", err)
+	}
+
+	// Step 2: Process the sub-features and update policies
+	var policiesToAdd []Policy
+	var policiesToRemove []string
+	var policiesRulesToAdd [][]string
+	var policiesRulesToRemove [][]string
+
+	// fmt.Println("data: ", subs)
+
+	for _, subFeature := range param.SubFeatures {
+		newSub, err := a.GetSubFeatureByID(ctx, subFeature.ID)
+		if err != nil {
+			if !errors.Is(err, sql.ErrNoRows) {
+				return err
+			}
+		}
+		for _, endpoint := range newSub.Endpoints {
+			if subFeature.Status {
+				// Add policies when the sub-feature status is true
+				policy := Policy{
+					RoleID:       updatedRole.ID,
+					FeatureID:    newSub.FeatureID,
+					SubFeatureID: subFeature.ID,
+					Status:       true,
+				}
+				policiesToAdd = append(policiesToAdd, policy)
+
+				// Casbin rule to add (with policy ID placeholder, to be updated after insert)
+				policiesRulesToAdd = append(policiesRulesToAdd, []string{
+					updatedRole.Name,
+					endpoint.URL,
+					endpoint.Method,
+					fmt.Sprint(policy.ID), // Policy ID will be updated after insert
+				})
+			} else {
+				// Fetch existing policies for the sub-feature
+				existingPolicies, err := a.GetPoliciesByRoleAndSubFeature(ctx, updatedRole.ID, subFeature.ID)
+				if err != nil {
+					return fmt.Errorf("failed to fetch policies: %w", err)
+				}
+
+				// Collect policies to remove
+				for _, policy := range existingPolicies {
+					policiesToRemove = append(policiesToRemove, fmt.Sprint(policy.ID))
+					// Casbin rule to remove (with policy ID)
+					policiesRulesToRemove = append(policiesRulesToRemove, []string{
+						updatedRole.Name,
+						endpoint.URL,
+						endpoint.Method,
+						fmt.Sprint(policy.ID),
+					})
+				}
+			}
+		}
+	}
+
+	// Step 3: Remove policies and Casbin rules for disabled sub-features
+	if len(policiesToRemove) > 0 {
+		_, err = tx.NewDelete().Model((*Policy)(nil)).
+			Where("id IN (?)", bun.In(policiesToRemove)).
+			Exec(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to delete policies: %w", err)
+		}
+
+		// Remove Casbin rules
+		_, err = a.Enforcer.RemovePolicies(policiesRulesToRemove)
+		if err != nil {
+			return fmt.Errorf("failed to remove Casbin policies: %w", err)
+		}
+	}
+
+	// Step 4: Add new policies for enabled sub-features
+	if len(policiesToAdd) > 0 {
+		// Insert policies into the database
+		_, err = tx.NewInsert().Model(&policiesToAdd).Returning("id").Exec(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to insert policies: %w", err)
+		}
+
+		// Update the policy IDs in the Casbin rules to add
+		for i, policy := range policiesToAdd {
+			// Update the last element (policy ID) of the corresponding rule
+			policiesRulesToAdd[i][3] = fmt.Sprint(policy.ID)
+		}
+
+		// Add Casbin rules
+		_, err = a.Enforcer.AddPolicies(policiesRulesToAdd)
+		if err != nil {
+			return fmt.Errorf("failed to add Casbin policies: %w", err)
+		}
+	}
+
+	// Step 5: Commit the transaction (handled by defer)
+	err = a.Enforcer.LoadPolicy()
+	if err != nil {
+		return fmt.Errorf("failed to reload Casbin policies: %w", err)
+	}
+
+	return nil
+}
+
 func (a *ACL) GetRoleWithFeatures(ctx context.Context, roleID int64) (*Role, error) {
 	role := &Role{ID: roleID}
 	// Query to fetch Role with Features and SubFeatures
@@ -116,12 +252,8 @@ func (a *ACL) GetRoleWithFeatures(ctx context.Context, roleID int64) (*Role, err
 		WherePK().
 		Scan(ctx)
 	// If no data is found, return a graceful message
-	fmt.Println(role)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("no role found with ID %d", roleID)
-		}
-		return nil, fmt.Errorf("failed to query role with features and sub-features: %w", err)
+		return nil, err
 	}
 
 	features := []Feature{}
@@ -210,4 +342,19 @@ func (a *ACL) DeleteRole(ctx context.Context, roleID int64) error {
 	}
 	fmt.Println("Policies and rules deleted successfully:")
 	return nil
+}
+
+func (a *ACL) GetRoleByID(ctx context.Context, roleID int64) (*Role, error) {
+	role := &Role{ID: roleID}
+	// Query to fetch Role with Features and SubFeatures
+	err := a.DB.NewSelect().
+		Model(role).
+		WherePK().
+		Scan(ctx)
+	// If no data is found, return a graceful message
+	fmt.Println(role)
+	if err != nil {
+		return nil, err
+	}
+	return role, nil
 }

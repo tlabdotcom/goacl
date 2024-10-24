@@ -7,7 +7,7 @@ import (
 	"github.com/uptrace/bun"
 )
 
-func (a *ACL) createRoleToDB(ctx context.Context, param *AclParam) error {
+func (a *ACL) createRoleToDB(ctx context.Context, param *RoleParam) error {
 	role := &Role{
 		Name:        param.Name,
 		Label:       param.Label,

@@ -58,18 +58,29 @@ type SubFeatureParam struct {
 	Status bool  `param:"status" query:"status" form:"status" json:"status" xml:"status"`
 }
 
-type AclParam struct {
+type RoleParam struct {
+	ID          int64             `param:"id" query:"id" form:"id" json:"id" xml:"id"`
 	Name        string            `param:"name" query:"name" form:"name" json:"name" xml:"name" validate:"required"`
 	Label       string            `param:"label" query:"label" form:"label" json:"label" xml:"label"`
 	Description string            `param:"description" query:"description" form:"description" json:"description" xml:"description"`
 	SubFeatures []SubFeatureParam `param:"sub_features" query:"sub_features" form:"sub_features" json:"sub_features" xml:"sub_features"`
 }
 
-func (p *AclParam) Validate() error {
+func (p *RoleParam) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(p)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (p *RoleParam) ValidateForUpdate(data *Role) (*Role, error) {
+	if p.Label != "" {
+		data.Label = p.Label
+	}
+	if p.Description != "" {
+		data.Description = p.Description
+	}
+	return data, nil
 }

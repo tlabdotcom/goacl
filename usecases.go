@@ -66,11 +66,6 @@ func NewACL(db *bun.DB, redis *redis.Client, aclKeyEvents *string) (*ACL, error)
 	}, nil
 }
 
-func (a *ACL) UpdateRole(ctx context.Context, role *Role) error {
-	// a.publishEvent(RoleUpdatedEvent, role)
-	return nil
-}
-
 // Implement CRUD operations for Feature, SubFeature, and Policy...
 func (a *ACL) AddPolicy(ctx context.Context, policy *Policy) error {
 	// Publish event

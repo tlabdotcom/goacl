@@ -18,3 +18,20 @@ func (a *ACL) GetPolicyIDsByRoleID(ctx context.Context, roleID int64) ([]int64, 
 	}
 	return policyIDs, nil
 }
+
+func (a *ACL) GetPoliciesByRoleAndSubFeature(ctx context.Context, roleID, subFeatureID int64) ([]Policy, error) {
+	// Prepare a slice to hold the policies
+	var policies []Policy
+
+	// Query the policies for the given role and sub-feature
+	err := a.DB.NewSelect().
+		Model(&policies).
+		Where("role_id = ?", roleID).
+		Where("sub_feature_id = ?", subFeatureID).
+		Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch policies for role %d and sub-feature %d: %w", roleID, subFeatureID, err)
+	}
+
+	return policies, nil
+}
