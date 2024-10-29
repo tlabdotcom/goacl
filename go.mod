@@ -7,12 +7,11 @@ require (
 	github.com/casbin/casbin/v2 v2.100.0
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/labstack/echo/v4 v4.12.0
-	github.com/labstack/gommon v0.4.2
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/spf13/viper v1.19.0
 	github.com/tlabdotcom/godb v1.0.0
 	github.com/tlabdotcom/gohelper v1.0.2
-	github.com/tlabdotcom/goresponse v1.0.2
+	github.com/tlabdotcom/goresponse v1.0.3
 	github.com/uptrace/bun v1.2.3
 )
 
@@ -29,6 +28,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

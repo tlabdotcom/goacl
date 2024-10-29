@@ -2,7 +2,6 @@ package goacl
 
 import (
 	"context"
-	"fmt"
 )
 
 func (a *ACL) GetPolicyIDsByRoleID(ctx context.Context, roleID int64) ([]int64, error) {
@@ -14,7 +13,36 @@ func (a *ACL) GetPolicyIDsByRoleID(ctx context.Context, roleID int64) ([]int64, 
 		Scan(ctx, &policyIDs)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve policy IDs for role_id %d: %w", roleID, err)
+		return nil, err
+	}
+	return policyIDs, nil
+}
+
+func (a *ACL) GetPolicyIDsByFeatureID(ctx context.Context, featureID int64) ([]int64, error) {
+	var policyIDs []int64
+	err := a.DB.NewSelect().
+		Model((*Policy)(nil)).
+		Column("id").
+		Where("feature_id = ?", featureID).
+		Scan(ctx, &policyIDs)
+
+	if err != nil {
+		return nil, err
+	}
+	return policyIDs, nil
+}
+
+func (a *ACL) GetPolicyIDsByFeatureIDAndSubFeatureID(ctx context.Context, featureID, subFeatureID int64) ([]int64, error) {
+	var policyIDs []int64
+	err := a.DB.NewSelect().
+		Model((*Policy)(nil)).
+		Column("id").
+		Where("feature_id = ?", featureID).
+		Where("sub_feature_id = ?", subFeatureID).
+		Scan(ctx, &policyIDs)
+
+	if err != nil {
+		return nil, err
 	}
 	return policyIDs, nil
 }
@@ -30,7 +58,7 @@ func (a *ACL) GetPoliciesByRoleAndSubFeature(ctx context.Context, roleID, subFea
 		Where("sub_feature_id = ?", subFeatureID).
 		Scan(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch policies for role %d and sub-feature %d: %w", roleID, subFeatureID, err)
+		return nil, err
 	}
 
 	return policies, nil
