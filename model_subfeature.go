@@ -24,45 +24,18 @@ type SubFeatureParam struct {
 	Endpoints   []*EndpointParam `param:"endpoints" query:"endpoints" form:"endpoints" json:"endpoints" xml:"endpoints"`
 }
 
-// func (p *SubFeatureParam) Validate() error {
-// 	validate := validator.New()
-// 	err := validate.Struct(p)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for _, endpoint := range p.Endpoints {
-// 		if err := endpoint.Validate(); err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
-
-// func (p *SubFeatureParam) ValidateForUpdate(data *SubFeature) (*SubFeature, error) {
-// 	if p.Name != "" {
-// 		data.Name = p.Name
-// 	}
-// 	if p.Description != "" {
-// 		data.Description = p.Description
-// 	}
-// 	if p.Status {
-// 		data.Status = p.Status
-// 	}
-// 	if p.FeatureID != 0 {
-// 		data.FeatureID = p.FeatureID
-// 	}
-
-// 	if len(p.Endpoints) > 0 {
-// 		data.Endpoints = make([]*Endpoint, len(p.Endpoints))
-// 		for i, endpointParam := range p.Endpoints {
-// 			endpoint := &Endpoint{}
-// 			if updatedEndpoint, err := endpointParam.ValidateForUpdate(endpoint); err == nil {
-// 				data.Endpoints[i] = updatedEndpoint
-// 			} else {
-// 				return nil, err
-// 			}
-// 		}
-// 	}
-
-// 	return data, nil
-// }
+func (p *SubFeatureParam) ValidateForUpdate(data *SubFeature) (*SubFeature, error) {
+	if p.Name != "" {
+		data.Name = p.Name
+	}
+	if p.Description != "" {
+		data.Description = p.Description
+	}
+	if p.Status {
+		data.Status = p.Status
+	}
+	if p.FeatureID != 0 {
+		data.FeatureID = p.FeatureID
+	}
+	return data, nil
+}

@@ -20,6 +20,6 @@ func (a *ACL) SetupRoutes(e *echo.Echo) {
 
 	// g.GET("/sub-feature/list", a.listSubFeatureHandler)
 	// g.POST("/sub-feature/create", a.createSubFeatureHandler)
-	g.PUT("/sub-feature/update/:id", a.updateSubFeatureHandler)
-	g.DELETE("/sub-feature/delete/:id", a.deleteSubFeatureHandler)
+	g.PUT("/subfeature/update/:id", a.updateSubFeatureHandler)
+	g.DELETE("/subfeature/delete/:id", a.deleteSubFeatureHandler)
 }

@@ -49,7 +49,8 @@ func (a *ACL) CreateRole(ctx context.Context, param *RoleParam) (*Role, error) {
 	}
 
 	if (len(subs)) == 0 {
-		return nil, fmt.Errorf("sub feature ids is not found or deleted")
+		err = fmt.Errorf("sub feature ids is not found or deleted")
+		return nil, err
 	}
 
 	// Step 3: Create policies

@@ -51,10 +51,11 @@ func authorizationMiddleware(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Replace with actual user role fetching logic
-			role := "user"
+			role := "superadmin"
 			obj := c.Request().URL.Path
 			act := c.Request().Method
 			// Check permission
+
 			allowed, err := enforcer.Enforce(role, obj, act)
 			if err != nil {
 				return goresponse.NewStandardErrorResponse(401).AddMessageError("authorization", err.Error()).JSON(c)

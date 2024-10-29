@@ -30,19 +30,19 @@ import (
 // }
 
 func (a *ACL) updateSubFeatureHandler(c echo.Context) error {
-	subFeature := new(SubFeature)
-	if err := c.Bind(subFeature); err != nil {
+	params := new(SubFeatureParam)
+	if err := c.Bind(params); err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
 	}
-	var err error
-	subFeature.ID, err = gohelper.StringToInt64(c.Param("id"))
-	if err != nil {
-		return goresponse.NewStandardErrorResponse(http.StatusUnprocessableEntity).AddError(err).JSON(c)
-	}
-	if err := a.UpdateSubFeature(c.Request().Context(), subFeature); err != nil {
+	if err := a.UpdateSubFeature(c.Request().Context(), params); err != nil {
 		return goresponse.NewStandardErrorResponse(http.StatusInternalServerError).AddError(err).JSON(c)
 	}
-	return c.JSON(http.StatusOK, goresponse.GenerateSingleDataResponse(subFeature, "SubFeature updated successfully", http.StatusOK))
+
+	data, err := a.GetSubFeatureByID(c.Request().Context(), params.ID)
+	if err != nil {
+		return goresponse.NewStandardErrorResponse(http.StatusInternalServerError).AddError(err).JSON(c)
+	}
+	return c.JSON(http.StatusOK, goresponse.GenerateSingleDataResponse(data, "SubFeature updated successfully", http.StatusOK))
 }
 
 func (a *ACL) deleteSubFeatureHandler(c echo.Context) error {

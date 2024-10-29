@@ -1,7 +1,6 @@
 package goacl
 
 import (
-	"github.com/go-playground/validator/v10"
 	"github.com/uptrace/bun"
 )
 
@@ -15,19 +14,19 @@ type Endpoint struct {
 
 type EndpointParam struct {
 	ID           int64  `param:"id" query:"id" form:"id" json:"id" xml:"id"`
-	Method       string `param:"method" query:"method" form:"method" json:"method" xml:"method"`
-	URL          string `param:"url" query:"url" form:"url" json:"url" xml:"url"`
-	SubFeatureID int64  `param:"sub_feature_id" query:"sub_feature_id" form:"sub_feature_id" json:"sub_feature_id" xml:"sub_feature_id"`
+	Method       string `param:"method" query:"method" form:"method" json:"method" xml:"method" validate:"required"`
+	URL          string `param:"url" query:"url" form:"url" json:"url" xml:"url" validate:"required"`
+	SubFeatureID int64  `param:"sub_feature_id" query:"sub_feature_id" form:"sub_feature_id" json:"sub_feature_id" xml:"sub_feature_id" validate:"required"`
 }
 
-func (p *EndpointParam) Validate() error {
-	validate := validator.New()
-	err := validate.Struct(p)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// func (p *EndpointParam) Validate() error {
+// 	validate := validator.New()
+// 	err := validate.Struct(p)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func (p *EndpointParam) ValidateForUpdate(data *Endpoint) (*Endpoint, error) {
 	if p.URL != "" {
@@ -35,6 +34,9 @@ func (p *EndpointParam) ValidateForUpdate(data *Endpoint) (*Endpoint, error) {
 	}
 	if p.Method != "" {
 		data.Method = p.Method
+	}
+	if p.SubFeatureID != 0 {
+		data.SubFeatureID = p.SubFeatureID
 	}
 	return data, nil
 }

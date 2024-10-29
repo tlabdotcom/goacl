@@ -2,6 +2,8 @@ package goacl
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/uptrace/bun"
@@ -67,11 +69,87 @@ func (a *ACL) getSubFeatureIncludeEndpointsByIDs(ctx context.Context, ids []int6
 // 	return nil
 // }
 
-func (a *ACL) UpdateSubFeature(ctx context.Context, subFeature *SubFeature) error {
-	_, err := a.DB.NewUpdate().Model(subFeature).WherePK().Exec(ctx)
+func (a *ACL) UpdateSubFeature(ctx context.Context, params *SubFeatureParam) error {
+	subFeature := &SubFeature{ID: params.ID}
+	err := a.DB.NewSelect().Model(subFeature).WherePK().Scan(ctx)
 	if err != nil {
 		return err
 	}
+	subFeature, err = params.ValidateForUpdate(subFeature)
+	if err != nil {
+		return err
+	}
+
+	tx, err := a.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		} else if err != nil {
+			_ = tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+
+	_, err = tx.NewUpdate().Model(subFeature).WherePK().Exec(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(params.Endpoints) > 0 {
+		for _, endpointParam := range params.Endpoints {
+			endpoint := &Endpoint{ID: endpointParam.ID}
+			err := tx.NewSelect().Model(endpoint).WherePK().Scan(ctx)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				return err
+			}
+
+			updatedEndpoint, err := endpointParam.ValidateForUpdate(endpoint)
+			if err != nil {
+				return err
+			}
+
+			if errors.Is(err, sql.ErrNoRows) || updatedEndpoint.ID == 0 {
+				// Check if an endpoint with the same url and sub_feature_id already exists
+				existingEndpoint := &Endpoint{}
+				err := tx.NewSelect().
+					Model(existingEndpoint).
+					Where("url = ?", updatedEndpoint.URL).
+					Where("sub_feature_id = ?", subFeature.ID).
+					Limit(1).
+					Scan(ctx)
+
+				if err != nil && !errors.Is(err, sql.ErrNoRows) {
+					return err
+				}
+
+				if existingEndpoint.ID != 0 {
+					// Update the existing endpoint if a duplicate is found
+					updatedEndpoint.ID = existingEndpoint.ID
+					updatedEndpoint.SubFeatureID = subFeature.ID
+					if _, err = tx.NewUpdate().Model(updatedEndpoint).WherePK().Exec(ctx); err != nil {
+						return err
+					}
+				} else {
+					// Insert if no duplicate is found
+					updatedEndpoint.SubFeatureID = subFeature.ID
+					if _, err := tx.NewInsert().Model(updatedEndpoint).Exec(ctx); err != nil {
+						return err
+					}
+				}
+			} else {
+				// Update existing endpoint
+				if _, err = tx.NewUpdate().Model(updatedEndpoint).WherePK().Exec(ctx); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
