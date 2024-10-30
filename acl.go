@@ -7,17 +7,15 @@ import (
 	sqladapter "github.com/Blank-Xu/sql-adapter"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
-	"github.com/redis/go-redis/v9"
 	"github.com/uptrace/bun"
 )
 
 type ACL struct {
 	DB       *bun.DB
-	Redis    *redis.Client
 	Enforcer *casbin.Enforcer
 }
 
-func NewACL(db *bun.DB, redis *redis.Client, aclKeyEvents *string) (*ACL, error) {
+func NewACL(db *bun.DB) (*ACL, error) {
 	m := model.NewModel()
 	m.AddDef("r", "r", "sub, obj, act")
 	m.AddDef("p", "p", "sub, obj, act, dom")
@@ -39,7 +37,6 @@ func NewACL(db *bun.DB, redis *redis.Client, aclKeyEvents *string) (*ACL, error)
 	}
 	newACL := &ACL{
 		DB:       db,
-		Redis:    redis,
 		Enforcer: enforcer,
 	}
 	err = newACL.Migrate(context.TODO())

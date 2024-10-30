@@ -6,7 +6,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"github.com/tlabdotcom/godb"
 	"github.com/uptrace/bun"
@@ -24,11 +23,8 @@ func init() {
 
 func TestACL_GetSubFeatureIncludeEndpointsByIDs(t *testing.T) {
 	db := godb.GetPostgresDB()
-	rd := godb.GetRedis()
 	type fields struct {
-		DB           *bun.DB
-		Redis        *redis.Client
-		AclKeyEvents string
+		DB *bun.DB
 	}
 	type args struct {
 		ctx context.Context
@@ -44,8 +40,7 @@ func TestACL_GetSubFeatureIncludeEndpointsByIDs(t *testing.T) {
 		{
 			name: "Test Get by IDs",
 			fields: fields{
-				DB:    db,
-				Redis: rd,
+				DB: db,
 			},
 			args: args{
 				ctx: context.TODO(),
@@ -56,7 +51,7 @@ func TestACL_GetSubFeatureIncludeEndpointsByIDs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a, _ := NewACL(tt.fields.DB, tt.fields.Redis, &tt.fields.AclKeyEvents)
+			a, _ := NewACL(tt.fields.DB)
 			got, err := a.getSubFeatureIncludeEndpointsByIDs(tt.args.ctx, tt.args.ids)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ACL.GetSubFeatureIncludeEndpointsByIDs() error = %v, wantErr %v", err, tt.wantErr)

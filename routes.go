@@ -4,8 +4,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (a *ACL) SetupRoutes(e *echo.Echo) {
-	g := e.Group("/acl")
+func (a *ACL) SetupRoutes(e *echo.Echo, mid echo.MiddlewareFunc) {
+	g := e.Group("/acl", mid)
 	g.GET("/role/list", a.listRolesHandler)
 	g.POST("/role/create", a.createRoleHandler)
 	g.GET("/role/detail/:id", a.detailRoleHandler)

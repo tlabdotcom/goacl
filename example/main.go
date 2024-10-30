@@ -25,12 +25,14 @@ func init() {
 func main() {
 	e := echo.New()
 	// initial go acl
-	acl, err := goacl.NewACL(godb.GetPostgresDB(), godb.GetRedis(), nil)
+	acl, err := goacl.NewACL(godb.GetPostgresDB())
 	if err != nil {
 		e.Logger.Fatal(err)
 	}
 	// setup routes
-	acl.SetupRoutes(e)
+	acl.SetupRoutes(e, func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error { return next(c) }
+	})
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
