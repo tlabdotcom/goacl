@@ -1,7 +1,6 @@
 package goacl
 
 // Define sample roles
-
 var (
 	SampleRoles = []Role{
 		{Name: "admin", Label: "Administrator", Description: "Has full access to the system"},
