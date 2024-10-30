@@ -6,10 +6,11 @@ import (
 
 type Endpoint struct {
 	bun.BaseModel `bun:"table:endpoints,alias:enp"`
-	ID            int64  `bun:"id,pk,autoincrement" json:"id"`
-	Method        string `bun:"method" json:"method"`
-	URL           string `bun:"url" json:"url"`
-	SubFeatureID  int64  `bun:"sub_feature_id" json:"sub_feature_id"`
+	ID            int64       `bun:"id,pk,autoincrement" json:"id"`
+	Method        string      `bun:"method" json:"method"`
+	URL           string      `bun:"url" json:"url"`
+	SubFeatureID  int64       `bun:"sub_feature_id" json:"sub_feature_id"`
+	SubFeature    *SubFeature `bun:"rel:belongs-to,join:sub_feature_id=id" json:"sub_feature,omitempty"`
 }
 
 type EndpointParam struct {

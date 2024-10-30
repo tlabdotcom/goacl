@@ -23,5 +23,15 @@ func (a *ACL) DeleteCasbinRuleByFeatureAndSubFeatureID(ctx context.Context, tx b
 	if err != nil {
 		return err
 	}
+
+	_, err = tx.NewDelete().
+		Model((*Policy)(nil)).
+		Where("feature_id = ?", featureID).
+		Where("sub_feature_id = ?", subFeatureID).
+		Exec(ctx)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

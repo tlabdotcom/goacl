@@ -22,4 +22,7 @@ func (a *ACL) SetupRoutes(e *echo.Echo) {
 	// g.POST("/sub-feature/create", a.createSubFeatureHandler)
 	g.PUT("/subfeature/update/:id", a.updateSubFeatureHandler)
 	g.DELETE("/subfeature/delete/:id", a.deleteSubFeatureHandler)
+
+	// enpoints
+	g.DELETE("/endpoint/delete/:id", a.deleteEndpointHandler)
 }
